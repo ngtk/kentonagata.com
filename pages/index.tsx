@@ -1,8 +1,12 @@
 import styled from 'styled-components'
+import Head from 'next/head'
 
 export default function Home() {
   return (
     <Container>
+      <Head>
+        <title>Kento Nagata</title>
+      </Head>
       <Title>Kento Nagata</Title>
     </Container>
   )
