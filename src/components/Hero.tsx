@@ -29,7 +29,7 @@ export default function Hero() {
       </div>
 
       {/* Right: key visual */}
-      <div className="flex items-center justify-center p-8 md:p-16 bg-gray-50 dark:bg-gray-900/50">
+      <div className="h-full min-h-[320px]">
         <KeyVisual />
       </div>
     </section>

@@ -1,95 +1,68 @@
 import React, { useRef, useEffect } from "react"
 
-const vertexShader = `
-void main() {
-  gl_Position = vec4(position, 1.0);
-}
-`
-
 const fragmentShader = `
+precision mediump float;
+
 uniform float u_time;
-uniform vec2 u_resolution;
-uniform vec3 u_bg;
+uniform vec2  u_resolution;
+uniform vec3  u_bg;
+
+float amoeba(vec2 uv, vec2 center, float R, float t, float phase, float aspect) {
+  vec2 d = uv - center;
+  d.x *= aspect;
+  float angle = atan(d.y, d.x);
+  float dist  = length(d);
+
+  float r = R
+    + 0.10*R * sin(2.0*angle + t*0.55 + phase)
+    + 0.07*R * sin(3.0*angle - t*0.42 + phase*1.3)
+    + 0.05*R * cos(4.0*angle + t*0.33 + phase*0.7)
+    + 0.03*R * cos(5.0*angle - t*0.26 + phase*1.6);
+
+  return dist - r;
+}
 
 void main() {
   vec2 uv = gl_FragCoord.xy / u_resolution;
   float aspect = u_resolution.x / u_resolution.y;
+  float t = u_time;
 
-  vec3 color = vec3(0.0);
+  // Blob 0: coral-red
+  vec2 c0 = vec2(
+    0.5 + 0.28 * sin(1.30 * t * 0.13 + 0.00),
+    0.5 + 0.28 * sin(1.70 * t * 0.13 + 1.20)
+  );
+  float d0 = amoeba(uv, c0, 0.22, t, 0.00, aspect);
+  vec3 color0 = vec3(1.00, 0.35, 0.40);
 
-  // Blob 0 — Lavender
-  {
-    float t = u_time * 0.13;
-    vec2 center = vec2(
-      0.5 + 0.35 * sin(1.3 * t + 0.0),
-      0.5 + 0.35 * sin(1.7 * t + 1.2)
-    );
-    vec2 d = uv - center;
-    d.x *= aspect;
-    float blob = exp(-dot(d, d) * 6.0);
-    color += vec3(0.780, 0.722, 0.918) * blob;
-  }
+  // Blob 1: electric blue
+  vec2 c1 = vec2(
+    0.5 + 0.28 * sin(2.10 * t * 0.13 + 2.50),
+    0.5 + 0.28 * sin(1.40 * t * 0.13 + 0.80)
+  );
+  float d1 = amoeba(uv, c1, 0.28, t, 2.10, aspect);
+  vec3 color1 = vec3(0.25, 0.55, 1.00);
 
-  // Blob 1 — Coral
-  {
-    float t = u_time * 0.11;
-    vec2 center = vec2(
-      0.5 + 0.35 * sin(2.1 * t + 2.5),
-      0.5 + 0.35 * sin(1.4 * t + 0.8)
-    );
-    vec2 d = uv - center;
-    d.x *= aspect;
-    float blob = exp(-dot(d, d) * 6.0);
-    color += vec3(0.969, 0.643, 0.643) * blob;
-  }
+  // Blob 2: lime-mint
+  vec2 c2 = vec2(
+    0.5 + 0.28 * sin(1.60 * t * 0.13 + 4.10),
+    0.5 + 0.28 * sin(2.30 * t * 0.13 + 3.00)
+  );
+  float d2 = amoeba(uv, c2, 0.20, t, 4.20, aspect);
+  vec3 color2 = vec3(0.25, 0.88, 0.55);
 
-  // Blob 2 — Mint
-  {
-    float t = u_time * 0.15;
-    vec2 center = vec2(
-      0.5 + 0.35 * sin(1.6 * t + 4.1),
-      0.5 + 0.35 * sin(2.3 * t + 3.0)
-    );
-    vec2 d = uv - center;
-    d.x *= aspect;
-    float blob = exp(-dot(d, d) * 6.0);
-    color += vec3(0.659, 0.847, 0.725) * blob;
-  }
-
-  // Blob 3 — Sky
-  {
-    float t = u_time * 0.18;
-    vec2 center = vec2(
-      0.5 + 0.35 * sin(1.1 * t + 1.7),
-      0.5 + 0.35 * sin(1.9 * t + 5.2)
-    );
-    vec2 d = uv - center;
-    d.x *= aspect;
-    float blob = exp(-dot(d, d) * 6.0);
-    color += vec3(0.643, 0.784, 0.941) * blob;
-  }
-
-  // Blob 4 — Peach
-  {
-    float t = u_time * 0.14;
-    vec2 center = vec2(
-      0.5 + 0.35 * sin(2.4 * t + 3.8),
-      0.5 + 0.35 * sin(1.2 * t + 2.1)
-    );
-    vec2 d = uv - center;
-    d.x *= aspect;
-    float blob = exp(-dot(d, d) * 6.0);
-    color += vec3(0.976, 0.831, 0.643) * blob;
-  }
-
-  // Reinhard tone mapping
-  color = color / (color + 1.0);
-
-  // Blend with background
-  float blobStrength = clamp(length(color) * 1.2, 0.0, 1.0);
-  color = mix(u_bg, color, blobStrength);
+  vec3 color = u_bg;
+  if (d0 < 0.0) color = color0;
+  if (d1 < 0.0) color = color1;
+  if (d2 < 0.0) color = color2;
 
   gl_FragColor = vec4(color, 1.0);
+}
+`
+
+const vertexShader = `
+void main() {
+  gl_Position = vec4(position, 1.0);
 }
 `
 
@@ -105,73 +78,64 @@ export default function KeyVisual() {
 
     import("three").then((THREE) => {
       const renderer = new THREE.WebGLRenderer({ antialias: false })
-      // Make canvas fill its parent via CSS; pixel buffer sized separately
       renderer.domElement.style.cssText = "display:block;width:100%;height:100%;"
       mount.appendChild(renderer.domElement)
 
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
       const scene = new THREE.Scene()
 
-      const darkMq = window.matchMedia("(prefers-color-scheme: dark)")
-      const getBg = (dark: boolean) =>
-        dark
-          ? new THREE.Vector3(17 / 255, 24 / 255, 39 / 255)
-          : new THREE.Vector3(249 / 255, 250 / 255, 251 / 255)
+      const geo = new THREE.PlaneGeometry(2, 2)
 
-      const uniforms = {
-        u_time: { value: 0 },
-        u_resolution: { value: new THREE.Vector2(1, 1) },
-        u_bg: { value: getBg(darkMq.matches) },
-      }
+      const isDark = () => window.matchMedia("(prefers-color-scheme: dark)").matches
+      const getBg = () => isDark()
+        ? new THREE.Vector3(17/255, 24/255, 39/255)
+        : new THREE.Vector3(249/255, 250/255, 251/255)
 
-      const material = new THREE.ShaderMaterial({
+      const mat = new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
-        uniforms,
+        uniforms: {
+          u_time:       { value: 0 },
+          u_resolution: { value: new THREE.Vector2(1, 1) },
+          u_bg:         { value: getBg() },
+        },
       })
 
-      const geometry = new THREE.PlaneGeometry(2, 2)
-      scene.add(new THREE.Mesh(geometry, material))
+      const mesh = new THREE.Mesh(geo, mat)
+      scene.add(mesh)
 
       const setSize = () => {
         const w = mount.clientWidth
         const h = mount.clientHeight
-        if (w === 0 || h === 0) return
-        renderer.setPixelRatio(window.devicePixelRatio)
+        if (!w || !h) return
         renderer.setSize(w, h, false)
-        uniforms.u_resolution.value.set(
-          w * window.devicePixelRatio,
-          h * window.devicePixelRatio
-        )
+        mat.uniforms.u_resolution.value.set(w, h)
       }
       setSize()
 
-      const resizeObserver = new ResizeObserver(setSize)
-      resizeObserver.observe(mount)
+      const ro = new ResizeObserver(setSize)
+      ro.observe(mount)
 
-      const onColorSchemeChange = (e: MediaQueryListEvent) => {
-        uniforms.u_bg.value = getBg(e.matches)
-      }
-      darkMq.addEventListener("change", onColorSchemeChange)
+      const mq = window.matchMedia("(prefers-color-scheme: dark)")
+      const onSchemeChange = () => { mat.uniforms.u_bg.value = getBg() }
+      mq.addEventListener("change", onSchemeChange)
 
       const clock = new THREE.Clock()
       const animate = () => {
         rafId = requestAnimationFrame(animate)
-        uniforms.u_time.value = clock.getElapsedTime()
+        mat.uniforms.u_time.value = clock.getElapsedTime()
         renderer.render(scene, camera)
       }
       animate()
 
       cleanup = () => {
         cancelAnimationFrame(rafId)
-        resizeObserver.disconnect()
-        darkMq.removeEventListener("change", onColorSchemeChange)
-        geometry.dispose()
-        material.dispose()
+        ro.disconnect()
+        mq.removeEventListener("change", onSchemeChange)
+        geo.dispose()
+        mat.dispose()
         renderer.dispose()
-        if (mount.contains(renderer.domElement)) {
-          mount.removeChild(renderer.domElement)
-        }
+        if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement)
       }
     })
 
@@ -179,10 +143,6 @@ export default function KeyVisual() {
   }, [])
 
   return (
-    <div
-      ref={mountRef}
-      className="w-full h-full min-h-[320px]"
-      aria-hidden="true"
-    />
+    <div ref={mountRef} className="w-full h-full min-h-[320px]" aria-hidden="true" />
   )
 }
