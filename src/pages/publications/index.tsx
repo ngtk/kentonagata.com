@@ -2,6 +2,7 @@ import React from "react"
 import { graphql, PageProps } from "gatsby"
 import Layout from "../../components/Layout"
 import PublicationItem from "../../components/PublicationItem"
+import { useLanguage } from "../../context/LanguageContext"
 
 interface PublicationsIndexData {
   allMdx: {
@@ -22,13 +23,14 @@ export default function PublicationsIndex({
   data,
 }: PageProps<PublicationsIndexData>) {
   const items = data.allMdx.nodes
+  const { t } = useLanguage()
 
   return (
     <Layout>
       <div className="max-w-3xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-bold mb-10">Publications</h1>
+        <h1 className="text-3xl font-bold mb-10">{t.publications.heading}</h1>
         {items.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400">No items yet.</p>
+          <p className="text-gray-500 dark:text-gray-400">{t.publications.empty}</p>
         ) : (
           <div>
             {items.map(item => (

@@ -2,6 +2,7 @@ import React from "react"
 import { graphql, PageProps } from "gatsby"
 import Layout from "../../components/Layout"
 import PortfolioCard from "../../components/PortfolioCard"
+import { useLanguage } from "../../context/LanguageContext"
 
 interface PortfolioIndexData {
   allMdx: {
@@ -21,13 +22,14 @@ export default function PortfolioIndex({
   data,
 }: PageProps<PortfolioIndexData>) {
   const items = data.allMdx.nodes
+  const { t } = useLanguage()
 
   return (
     <Layout>
       <div className="max-w-5xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-bold mb-10">Portfolio</h1>
+        <h1 className="text-3xl font-bold mb-10">{t.portfolio.heading}</h1>
         {items.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400">No items yet.</p>
+          <p className="text-gray-500 dark:text-gray-400">{t.portfolio.empty}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map(item => (

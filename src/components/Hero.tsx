@@ -1,7 +1,10 @@
 import React from "react"
 import KeyVisual from "./KeyVisual"
+import { useLanguage } from "../context/LanguageContext"
 
 export default function Hero() {
+  const { t } = useLanguage()
+
   return (
     <section className="flex-1 grid grid-cols-1 md:grid-cols-2">
       {/* Left: text */}
@@ -12,16 +15,16 @@ export default function Hero() {
           Nagata
         </h1>
         <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 mb-4 font-light">
-          Software Developer
+          {t.hero.subtitle}
         </p>
         <p className="text-base text-gray-400 dark:text-gray-500 mb-10 max-w-xs leading-relaxed">
-          Building clean, useful software.
+          {t.hero.description}
         </p>
         <a
           href="mailto:me@kentonagata.com"
           className="group inline-flex items-center gap-2 text-sm font-medium border-b border-gray-900 dark:border-gray-100 pb-0.5 w-fit hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
         >
-          Say Hello
+          {t.hero.cta}
           <span className="transform transition-transform group-hover:translate-x-1">
             →
           </span>

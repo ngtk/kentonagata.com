@@ -1,6 +1,7 @@
 import React from "react"
 import { graphql, Link, PageProps } from "gatsby"
 import Layout from "../components/Layout"
+import { useLanguage } from "../context/LanguageContext"
 
 interface PortfolioItemData {
   mdx: {
@@ -17,6 +18,7 @@ export default function PortfolioItem({
   children,
 }: PageProps<PortfolioItemData>) {
   const { title, description, year } = data.mdx.frontmatter
+  const { t } = useLanguage()
 
   return (
     <Layout>
@@ -25,7 +27,7 @@ export default function PortfolioItem({
           to="/portfolio"
           className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors mb-12"
         >
-          ← Portfolio
+          {t.portfolio.back}
         </Link>
         <header className="mb-12">
           <p className="text-sm text-gray-400 dark:text-gray-500 mb-2 font-mono">

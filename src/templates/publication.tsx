@@ -1,6 +1,9 @@
 import React from "react"
 import { graphql, Link, PageProps } from "gatsby"
+import { MDXProvider } from "@mdx-js/react"
 import Layout from "../components/Layout"
+import { EN, JA } from "../components/LangBlock"
+import { useLanguage } from "../context/LanguageContext"
 
 interface PublicationData {
   mdx: {
@@ -13,11 +16,14 @@ interface PublicationData {
   }
 }
 
+const mdxComponents = { EN, JA }
+
 export default function Publication({
   data,
   children,
 }: PageProps<PublicationData>) {
   const { title, venue, year, url } = data.mdx.frontmatter
+  const { t } = useLanguage()
 
   return (
     <Layout>
@@ -26,7 +32,7 @@ export default function Publication({
           to="/publications"
           className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors mb-12"
         >
-          ← Publications
+          {t.publications.back}
         </Link>
         <header className="mb-12">
           <p className="text-sm text-gray-400 dark:text-gray-500 mb-2 font-mono">
@@ -40,12 +46,12 @@ export default function Publication({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             >
-              External link ↗
+              {t.publications.external}
             </a>
           )}
         </header>
         <div className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-4">
-          {children}
+          <MDXProvider components={mdxComponents}>{children}</MDXProvider>
         </div>
       </article>
     </Layout>
