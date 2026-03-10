@@ -22,41 +22,40 @@ float amoeba(vec2 uv, vec2 center, float R, float t, float phase, float aspect) 
   return dist - r;
 }
 
+vec3 sceneColor(float ti, vec2 uv, float aspect) {
+  vec2 c0 = vec2(
+    0.5 + 0.28 * sin(1.30 * ti * 0.13 + 0.00),
+    0.5 + 0.28 * sin(1.70 * ti * 0.13 + 1.20)
+  );
+  vec2 c1 = vec2(
+    0.5 + 0.28 * sin(2.10 * ti * 0.13 + 2.50),
+    0.5 + 0.28 * sin(1.40 * ti * 0.13 + 0.80)
+  );
+  vec2 c2 = vec2(
+    0.5 + 0.28 * sin(1.60 * ti * 0.13 + 4.10),
+    0.5 + 0.28 * sin(2.30 * ti * 0.13 + 3.00)
+  );
+
+  float d0 = amoeba(uv, c0, 0.22, ti, 0.00, aspect);
+  float d1 = amoeba(uv, c1, 0.28, ti, 2.10, aspect);
+  float d2 = amoeba(uv, c2, 0.20, ti, 4.20, aspect);
+
+  float e = 0.0005;
+  vec3 col = u_bg;
+  col = mix(col, vec3(1.00, 0.35, 0.40), 1.0 - smoothstep(-e, e, d0));
+  col = mix(col, vec3(0.25, 0.55, 1.00), 1.0 - smoothstep(-e, e, d1));
+  col = mix(col, vec3(0.25, 0.88, 0.55), 1.0 - smoothstep(-e, e, d2));
+  return col;
+}
+
 void main() {
   vec2 uv = gl_FragCoord.xy / u_resolution;
   float aspect = u_resolution.x / u_resolution.y;
   float t = u_time;
 
-  // Blob 0: coral-red
-  vec2 c0 = vec2(
-    0.5 + 0.28 * sin(1.30 * t * 0.13 + 0.00),
-    0.5 + 0.28 * sin(1.70 * t * 0.13 + 1.20)
-  );
-  float d0 = amoeba(uv, c0, 0.22, t, 0.00, aspect);
-  vec3 color0 = vec3(1.00, 0.35, 0.40);
+  vec3 col = sceneColor(t, uv, aspect);
 
-  // Blob 1: electric blue
-  vec2 c1 = vec2(
-    0.5 + 0.28 * sin(2.10 * t * 0.13 + 2.50),
-    0.5 + 0.28 * sin(1.40 * t * 0.13 + 0.80)
-  );
-  float d1 = amoeba(uv, c1, 0.28, t, 2.10, aspect);
-  vec3 color1 = vec3(0.25, 0.55, 1.00);
-
-  // Blob 2: lime-mint
-  vec2 c2 = vec2(
-    0.5 + 0.28 * sin(1.60 * t * 0.13 + 4.10),
-    0.5 + 0.28 * sin(2.30 * t * 0.13 + 3.00)
-  );
-  float d2 = amoeba(uv, c2, 0.20, t, 4.20, aspect);
-  vec3 color2 = vec3(0.25, 0.88, 0.55);
-
-  vec3 color = u_bg;
-  if (d0 < 0.0) color = color0;
-  if (d1 < 0.0) color = color1;
-  if (d2 < 0.0) color = color2;
-
-  gl_FragColor = vec4(color, 1.0);
+  gl_FragColor = vec4(col, 1.0);
 }
 `
 
